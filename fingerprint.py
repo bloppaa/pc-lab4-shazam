@@ -18,28 +18,34 @@ def find_local_peaks(
     return peak_local_max(spectrogram, min_distance=min_distance)
 
 
-if __name__ == "__main__":
-    from spectrogram import generate_spectrogram
-    import matplotlib.pyplot as plt
+def generate_hashes(peaks: np.ndarray, fan_value: int = 5,
+                    time_window: int = 50) -> list[int]:
+    """
+    Generate hashes from peak coordinates.
 
-    S_db, sr = generate_spectrogram()
+    Args:
+        peaks: A 2D array of (frequency, time) pairs.
+        fan_value: Number of peaks to consider.
+        time_window: Maximum time distance between peaks.
 
-    im = img_as_float(S_db)
-    peaks = find_local_peaks(im)
+    Returns:
+        A list of hashes.
+    """
+    hashes = []
+    num_peaks = len(peaks)
 
-    fig, axes = plt.subplots(1, 2, figsize=(8, 3), sharex=True, sharey=True)
-    ax = axes.ravel()
+    for i in range(num_peaks):
+        freq1, t1 = peaks[i]
 
-    ax[0].imshow(im, cmap=plt.cm.gray, origin='lower', aspect='auto')
-    ax[0].axis('off')
-    ax[0].set_title('Original')
+        for j in range(i + 1, min(i + 1 + fan_value, num_peaks)):
+            freq2, t2 = peaks[j]
 
-    ax[1].imshow(im, cmap=plt.cm.gray, origin='lower', aspect='auto')
-    ax[1].autoscale(False)
-    ax[1].plot(peaks[:, 1], peaks[:, 0], 'r.')
-    ax[1].axis('off')
-    ax[1].set_title('Peak local max')
+            if t2 - t1 > time_window:
+                break
 
-    fig.tight_layout()
+            delta_t = t2 - t1
+            hash_value = hash((freq1, freq2, delta_t))
 
-    plt.show()
+            hashes.append(hash_value)
+
+    return hashes

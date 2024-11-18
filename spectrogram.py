@@ -19,14 +19,3 @@ def generate_spectrogram(
     S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
 
     return S_db, sr
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    S_db, sr = generate_spectrogram()
-
-    plt.figure()
-    librosa.display.specshow(S_db)
-
-    plt.show()
